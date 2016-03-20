@@ -4,12 +4,12 @@
 #BSUB -e histogram_equalization_error.txt
 #BSUB -n 1
 #BSUB -q ht-10g
-#BSUB cwd /home/bradbury.d/project/
+#BSUB cwd /home/bradbury.d/project/c/
 
-work=/home/bradbury.d/project/
+work=/home/bradbury.d/project/c/
 cd $work
 
 for i in `seq 1 10`;
 do
-    ./histogram_equalization winter.jpg
+    ./histogram_equalization ../images/winter.jpg
 done

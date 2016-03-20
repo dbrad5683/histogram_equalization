@@ -4,9 +4,9 @@
 #BSUB -e histogram_equalization_error.txt
 #BSUB -n 1
 #BSUB -q ht-10g
-#BSUB cwd /home/bradbury.d/project/
+#BSUB cwd /home/bradbury.d/project/omp/
 
-work=/home/bradbury.d/project/
+work=/home/bradbury.d/project/omp/
 cd $work
 
 for i in `seq 1 10`;
@@ -14,6 +14,6 @@ do
     for num_threads in `seq 1 32`;
     do
         export OMP_NUM_THREADS=$num_threads
-        ./histogram_equalization winter.jpg
+        ./histogram_equalization ../images/winter.jpg
     done
 done
