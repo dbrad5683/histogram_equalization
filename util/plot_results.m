@@ -1,9 +1,6 @@
-fclose all;
-close all;
-clear;
-clc;
+function plot_results(filename)
 
-fid = fopen('result.bin', 'rb');
+fid = fopen(filename, 'rb');
 rows = fread(fid, 1, 'int'); 
 cols = fread(fid, 1, 'int');
 data_in = fread(fid, [rows, cols], 'uchar')';
@@ -20,4 +17,6 @@ imagesc(data_out, [0, 255]);
 title('After');
 
 fprintf('Before: min = %u, max = %u\n', min(data_in(:)), max(data_in(:)));
-fprintf('After: min = %u, max = %u\n', min(data_out(:)), max(data_out(:)));
+fprintf('After: min =  %u, max = %u\n', min(data_out(:)), max(data_out(:)));
+
+end
