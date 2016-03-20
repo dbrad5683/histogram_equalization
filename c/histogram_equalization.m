@@ -7,8 +7,6 @@ fid = fopen('result.bin', 'rb');
 rows = fread(fid, 1, 'int'); 
 cols = fread(fid, 1, 'int');
 data_in = fread(fid, [rows, cols], 'uchar')';
-% rows = fread(fid, 1, 'int'); 
-% cols = fread(fid, 1, 'int');
 data_out = fread(fid, [rows, cols], 'uchar')';
 fclose(fid);
 

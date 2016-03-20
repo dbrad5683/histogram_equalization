@@ -79,7 +79,7 @@ int test(void) {
 
     FILE *fid = fopen("result.bin", "wb+");
 
-    my_print(data, rows, cols);
+    // my_print(data, rows, cols);
     my_save(fid, data, &rows, &cols, size);
 
     clock_t start_t, end_t;
@@ -89,7 +89,7 @@ int test(void) {
     
     end_t = clock();
 
-    my_print(data, rows, cols);
+    // my_print(data, rows, cols);
     my_save(fid, data, NULL, NULL, size);
 
     printf("%f\n", (double)(end_t - start_t)/CLOCKS_PER_SEC);
