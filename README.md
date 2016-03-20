@@ -9,7 +9,7 @@ OpenMP - omp/
 Compile with make from within the corresponding directory.
 
 ### Single Run Instructions
-Run with ./histogram_equalization image.jpg from within the corresponding directory. Specify any JPEG file. Produces out.jpg.
+Run with ./histogram_equalization image.jpg from within the corresponding directory. Specify any JPEG file. Produces out.jpg. For the OpenMP version, set the OMP_NUM_THREADS environment variable as desired before running.
 
 ### Batch Run Instructions
 Submit histogram_equalization.bash to bsub from within the corresponding directory. This is how all timing measurements were made.
