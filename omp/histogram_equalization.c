@@ -1,6 +1,5 @@
 #include <omp.h>
 #include <math.h>
-#include <time.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -13,10 +12,24 @@ void equalize(unsigned char *data, int size) {
     unsigned long *buf = calloc(N, sizeof *buf);
 
     // Compute histogram buffer
-    #pragma omp parallel for reduction(+:buf)
-        for(int i = 0; i < size; i++) {
-            buf[data[i]] += 1;
+    #pragma omp parallel 
+    {
+
+        unsigned long *private_buf = calloc(N, sizeof *private_buf);
+
+        #pragma omp for
+            for(int i = 0; i < size; i++) {
+                private_buf[data[i]] += 1;
+            }
+
+        #pragma omp critical
+        {
+            for(int i = 0; i < N; i++) {
+                buf[i] += private_buf[i];
+            }
         }
+
+    }
 
     // Scan buffer to compute cumulative distribution function (cdf)
     for(int i = 1; i < N; i++) {
@@ -83,20 +96,20 @@ int test(void) {
 
     FILE *fid = fopen("result.bin", "wb+");
 
-    my_print(data, rows, cols);
+    // my_print(data, rows, cols);
     my_save(fid, data, &rows, &cols, size);
 
-    clock_t start_t, end_t;
-    start_t = clock();
+    double start_t, end_t;
+    start_t = omp_get_wtime();
 
     equalize(data, size);
     
-    end_t = clock();
+    end_t = omp_get_wtime();
 
-    my_print(data, rows, cols);
+    // my_print(data, rows, cols);
     my_save(fid, data, NULL, NULL, size);
 
-    printf("%f\n", (double)(end_t - start_t)/CLOCKS_PER_SEC);
+    printf("%f\n", end_t - start_t);
     
     fclose(fid);
     free(data);
@@ -131,14 +144,14 @@ int main(int argc, char **argv) {
         }
     }
 
-    clock_t start_t, end_t;
-    start_t = clock();
+    double start_t, end_t;
+    start_t = omp_get_wtime();;
     
     // Equalize Y component
     equalize(Y, size);
 
-    end_t = clock();
-    printf("%f\n", (double)(end_t - start_t)/CLOCKS_PER_SEC);
+    end_t = omp_get_wtime();
+    printf("%f\n", end_t - start_t);
 
     // Update Y component
     count = 0;
