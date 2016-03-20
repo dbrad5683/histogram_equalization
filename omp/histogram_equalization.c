@@ -14,9 +14,9 @@ void equalize(unsigned char *data, int size) {
 
     // Compute histogram buffer
     #pragma omp parallel for reduction(+:buf)
-    for(int i = 0; i < size; i++) {
-        buf[data[i]] += 1;
-    }
+        for(int i = 0; i < size; i++) {
+            buf[data[i]] += 1;
+        }
 
     // Scan buffer to compute cumulative distribution function (cdf)
     for(int i = 1; i < N; i++) {
@@ -38,9 +38,10 @@ void equalize(unsigned char *data, int size) {
         }
 
     // Update data with equalized values
-    for(int i = 0; i < size; i++) {
-        data[i] = (unsigned char)buf[data[i]];
-    }
+    #pragma omp parallel for
+        for(int i = 0; i < size; i++) {
+            data[i] = (unsigned char)buf[data[i]];
+        }
     
     free(buf);
 
