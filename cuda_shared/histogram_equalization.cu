@@ -23,9 +23,9 @@ __global__ void histogram(unsigned char *data, unsigned int *buf, int size, int 
     // Absolute linear thread index
     int i = x + (y * blockDim.x * gridDim.x);
 
-    // Initialize temporary accumulation array in global memory
-    unsigned int *my_buf = buf + (b * NUM_BINS);
-    my_buf[t] = 0;
+    // Initialize temporary accumulation array in shared memory
+    __shared__ unsigned int s_buf[NUM_BINS];
+    s_buf[t] = 0;
 
     // Count NUM_PARTS elements per thread for histogram
     int step = (int)ceil((float)size / (float)NUM_PARTS);
@@ -33,10 +33,15 @@ __global__ void histogram(unsigned char *data, unsigned int *buf, int size, int 
         for (int p = 0; p < NUM_PARTS; p++) {
             int idx = i + (p * step);
             if (idx < size) {
-                atomicAdd(&my_buf[data[idx]], 1);
+                atomicAdd(&s_buf[data[idx]], 1);
             }
         }
     }
+    __syncthreads();
+
+    unsigned int *my_buf = buf + (b * NUM_BINS);
+    my_buf[t] = s_buf[t];
+
 }
 
 __global__ void accumulate(unsigned int *buf, int NUM_BLOCKS) {
@@ -114,9 +119,9 @@ int test(void) {
     int cols = 7680;
     int size = rows * cols;
 
-    int NUM_PARTS = 32;
+    int NUM_PARTS = 128;
     int NUM_BLOCKS = (int)ceil((float)size / (float)(NUM_BINS * NUM_PARTS));
-    dim3 UPDATE_GRID(ceil(sqrt(NUM_BLOCKS * NUM_PARTS)), ceil(sqrt(NUM_BLOCKS * NUM_PARTS)));
+    dim3 UPDATE_GRID((int)ceil(sqrt(NUM_BLOCKS * NUM_PARTS)), (int)ceil(sqrt(NUM_BLOCKS * NUM_PARTS)));
 
     unsigned char *h_data;
     unsigned int *h_buf;
@@ -140,7 +145,7 @@ int test(void) {
         // h_buf_test[h_data[i]] += 1;
     }
 
-    my_print(h_data, rows, cols);
+    // my_print(h_data, rows, cols);
 
     cudaMemcpy(d_data, h_data, size * sizeof *h_data, cudaMemcpyHostToDevice);
 
@@ -175,14 +180,14 @@ int test(void) {
     //     h_buf[i] = total;
     // }
 
-    my_print(h_data, rows, cols);
+    // my_print(h_data, rows, cols);
 
     // for (int i = 0; i < NUM_BINS; i++) {
     //     printf("%4d, %5u, %5u, %5u\n", i, h_buf[i], h_buf_test[i], h_buf[i] - h_buf_test[i]);
     // }
 
     // printf("%d\n", cdf_min);
-    // printf("%f\n", time);
+    printf("%f\n", time);
 
     cudaFree(d_data);
     cudaFree(d_buf);
@@ -210,9 +215,9 @@ int main(int argc, char **argv) {
     int cols = img.width;
     int size = rows * cols;
 
-    int NUM_PARTS = 256;
+    int NUM_PARTS = 128;
     int NUM_BLOCKS = (int)ceil((float)size / (float)(NUM_BINS * NUM_PARTS));
-    dim3 UPDATE_GRID(ceil(sqrt(NUM_BLOCKS * NUM_PARTS)), ceil(sqrt(NUM_BLOCKS * NUM_PARTS)));
+    dim3 UPDATE_GRID((int)ceil(sqrt(NUM_BLOCKS * NUM_PARTS)), (int)ceil(sqrt(NUM_BLOCKS * NUM_PARTS)));
 
     unsigned char *h_data;
     unsigned int *h_buf;
@@ -272,5 +277,12 @@ int main(int argc, char **argv) {
 
     // Write jpeg
     jpegwrite("out.jpg", &img, 100);
+
+    cudaFree(d_data);
+    cudaFree(d_buf);
+    free(h_data);
+    free(h_buf);
+
+    return(0);
 
 }
